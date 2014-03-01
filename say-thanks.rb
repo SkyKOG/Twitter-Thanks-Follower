@@ -40,7 +40,8 @@ latest_followers = current_followers.reject{|current_follower| old_ids.include? 
 # send thanks to new followers
 if latest_followers # nil check
   latest_followers.each do |follower|
-    client.update("Thanks for the follow @#{follower.screen_name}!")
+    # client.update("Thanks for the follow @#{follower.screen_name}!")
+    client.create_direct_message("#{follower.screen_name}", "Thanks for the follow!")
     sleep 5 # prevent blacklist by twitter
   end
 end
