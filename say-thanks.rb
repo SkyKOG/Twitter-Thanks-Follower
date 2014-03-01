@@ -17,24 +17,27 @@ redis = Redis.new
 twitter_handle = "SkyKOG"
 
 # Initialise
+# to be stored in redis for the first time
 def setup_old_followers
-  # to be stored in redis for the first time
+  # get array of follower objects from twitter
   old_followers = client.followers(twitter_handle).to_a
+  # convert to ruby hash taking only required data
   old_followers_hash = old_followers.map { |follower| {id: follower.id, name: follower.name, screen_name: follower.screen_name}}
+  # store to redis in json
   redis.set twitter_handle, old_followers_hash.to_json
 end
 
 # Parse JSON from redis
 old_followers = JSON.parse(redis.get(twitter_handle))
 
-# get a list of all ids stored in database since last run
+# get a list of all follower ids stored in database since last run
 old_ids = []
 old_followers.each {|hash| old_ids << hash['id']}
 
 # get latest updated list of followers from twitter
 current_followers = client.followers(twitter_handle).to_a
 
-# filter new followers by rejecting the followers already stored in database
+# filter new followers by rejecting the followers already processed in the past
 latest_followers = current_followers.reject{|current_follower| old_ids.include? current_follower.id}
 
 # send thanks to new followers
